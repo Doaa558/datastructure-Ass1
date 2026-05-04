@@ -1,0 +1,82 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int searchRotated(vector<int>& v, int n, int target, int& comparisons) {
+    int left = 0;
+    int right = n - 1;
+
+    while (left <= right) {
+        int mid = (left + right) / 2;
+        comparisons++; 
+        if (v[left] == target) return left;
+        else if (v[right] == target) return right;
+        else if (v[mid] == target) {
+            return mid;
+        }
+
+
+        // duplicates
+        if (v[left] == v[mid] && v[mid] == v[right]) {
+            left++;
+            right--;
+        }
+        // Left sorted
+        else if (v[left] <= v[mid]) {
+            comparisons++;
+            if (target > v[left] && target < v[mid]) {
+                right = mid - 1;
+            }
+            else {
+                left = mid + 1;
+            }
+        }
+        // Right sorted
+        else {
+            comparisons++;
+            if (target > v[mid] && target < v[right]) {
+                left = mid + 1;
+            }
+            else {
+                right = mid - 1;
+            }
+        }
+    }
+
+    return -1; // Not Found
+}
+
+int main() {
+    int n;
+    int target;
+    cout << "Enter number of elements: ";
+    cin >> n;
+
+    vector<int> v;
+
+    cout << "Enter elements:\n";
+
+    for (int i = 0; i < n; i++) {
+        int x;
+        cin >> x;
+        v.push_back(x);
+    }
+
+    cout << "Enter number to search: ";
+    cin >> target;
+
+    int comparisons = 0;
+
+    int result = searchRotated(v, n, target, comparisons);
+
+    if (result != -1) {
+        cout << "Found at index: " << result << endl;
+    }
+    else {
+        cout << "Not found" << endl;
+    }
+
+    cout << "Number of comparisons: " << comparisons << endl;
+
+    return 0;
+}
