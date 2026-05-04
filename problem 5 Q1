@@ -1,70 +1,59 @@
-#include <iostream>
-#include <stack>
-#include <string>
+#include<iostream>
+#include<stack>
+#include<string>
 using namespace std;
 
-class calculator {
+class calculator{
 public:
-    int evaluate(const string& expression) {
-        stack<int> st;
+    int evaluate(const string&expression){
+        stack<int>st;
+        int currentresult=0,currentnumber=0,currentsign=1;
 
-        int currentresult = 0;
-        int currentnumber = 0;
-        int currentsign = 1;
-
-        for (char ch : expression) {
-
-            if (isdigit(ch)) {
-                currentnumber = currentnumber * 10 + (ch - '0');
+        for(char ch:expression){
+            if(isdigit(ch)){
+                currentnumber=currentnumber*10+(ch-'0');
             }
-
-            else if (ch == '+') {
-                apply(currentresult, currentnumber, currentsign);
-                currentsign = 1;
+            else if(ch=='+'){
+                apply(currentresult,currentnumber,currentsign);
+                currentsign=1;
             }
-
-            else if (ch == '-') {
-                apply(currentresult, currentnumber, currentsign);
-                currentsign = -1;
+            else if(ch=='-'){
+                apply(currentresult,currentnumber,currentsign);
+                currentsign=-1;
             }
-
-            else if (ch == '(') {
+            else if(ch=='('){
                 st.push(currentresult);
                 st.push(currentsign);
-
-                currentresult = 0;
-                currentsign = 1;
+                currentresult=0;
+                currentsign=1;
             }
-
-            else if (ch == ')') {
-                apply(currentresult, currentnumber, currentsign);
-
-                int prevsign = st.top(); st.pop();
-                int prevresult = st.top(); st.pop();
-
-                currentresult = prevresult + prevsign * currentresult;
+            else if(ch==')'){
+                apply(currentresult,currentnumber,currentsign);
+                int prevsign=st.top();st.pop();
+                int prevresult=st.top();st.pop();
+                currentresult=prevresult+prevsign*currentresult;
             }
         }
 
-        apply(currentresult, currentnumber, currentsign);
+        apply(currentresult,currentnumber,currentsign);
         return currentresult;
     }
 
 private:
-    void apply(int& currentresult, int& currentnumber, int currentsign) {
-        currentresult += currentsign * currentnumber;
-        currentnumber = 0;
+    void apply(int&currentresult,int&currentnumber,int currentsign){
+        currentresult+=currentsign*currentnumber;
+        currentnumber=0;
     }
 };
 
-int main() {
+int main(){
     calculator calc;
     string input;
 
-    cout << "enter expression: ";
-    getline(cin, input);
+    cout<<"enter expression:";
+    getline(cin,input);
 
-    cout << "result = " << calc.evaluate(input) << endl;
+    cout<<"result="<<calc.evaluate(input)<<endl;
 
     return 0;
 }
