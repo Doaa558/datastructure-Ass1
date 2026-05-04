@@ -1,36 +1,51 @@
 #include<iostream>
+#include<algorithm>
 using namespace std;
 class SortingArray {
 private:
-	int size;
+    int size;
     static const int  Max_Size = 100;
     int data[Max_Size];
 public:
-    SortingArray(int arr[],int n) {
-		size = n;
-		for (int i = 0;i < size;i++) {
-			data[i] = arr[i];
-		}
-	}
+    //constructor
+    SortingArray(int arr[], int n) {
+        size = n;
+        for (int i = 0;i < size;i++) {
+            data[i] = arr[i];
+        }
+    }
     // linear search
     void linearSearch(int target) {
         bool found = false;
         int nfound = 0;
+        int middle = size / 2;
         for (int i = 0;i < size;i++) {
             if (data[i] == target) {
                 if (nfound == 0) {
                     nfound += 1;
                     found = true;
-                    cout << target << " is found on position" << " " << i + 1 << endl;
+                    if (i > middle) {
+                        cout << target << " is found on Right half on position" << " " << i + 1 << endl;
+                    }
+                    else if (i < middle) {
+                        cout << target << " is found on Left half on position" << " " << i + 1 << endl;
+                    }
+                    else if (i == middle) {
+                        cout << target << " is The bitonic point on position" << " " << i + 1 << endl;
+                    }
                 }
-                else {
-                    cout << target << " is duplicated, it also found on position" << " " << i + 1 << endl;
-                }
+                    else {
+                        cout << target << " is duplicated, it also found on position" << " " << i + 1 << endl;
+                    }
+                
+
             }
         }
-        if (!found) {
-            cout << target << " is not found" << endl;
-        }
+               if (!found) {
+                    cout << target << " is not found" << endl;
+                }
+            
+        
     }
     // bubblesort
     void BubbleSort(int L1, int R, int& compare1, int& swaps1) {
@@ -64,35 +79,47 @@ public:
         int mid = size / 2;
         int compare1 = 0, compare2 = 0;
         int swaps1 = 0, swaps2 = 0;
-        BubbleSort( 0, mid, compare1, swaps1);
+        BubbleSort(0, mid, compare1, swaps1);
         SelectionSort(mid, size, compare2, swaps2);
-        cout << " Total comparisons = " << compare1 + compare2 << " where " << "Bubble_compare = " << compare1 << " and " << " Selection_compare = " << compare2 << endl;
+        cout << "Total comparisons = " << compare1 + compare2 << " where " << "Bubble_compare = " << compare1 << " and " << " Selection_compare = " << compare2 << endl;
         cout << "Total swaps = " << swaps1 + swaps2 << " where " << " Bubble_swaps = " << swaps1 << " and " << " Selection_swaps = " << swaps2 << endl;
     }
     //print
     void print() {
-        cout << "The sorted array ";
+        cout << "----The sorted array------ ";
         for (int i = 0;i < size;i++)
             cout << data[i] << " ";
     }
+    
+    
 };
 int main() {
     cout << "------------------------ Search in bitonic array -----------------------------------" << endl;
-    const int n = 7;
-    int data[n] = { 8,9,1,12,9,6,9 };
-    SortingArray a = SortingArray(data, n);
+     int n,t;
+    cout << "Enter the size of the array: ";
+        cin >> n;
+        int* arr = new int[n];
+        cout << "Enter the Array: ";
+        // read data
+        for (int i = 0;i < n;i++) {
+            cin >> arr[i];
+        }
+    SortingArray a = SortingArray(arr, n);
     a.sorting();
     a.print();
     cout << endl;
-    cout << "---Target at the bitonic point---" << endl;
-    a.linearSearch(12);
-    cout << "---Target in the left half---" << endl;
-    a.linearSearch(6);
-    cout << "---Target in the right half---" << endl;
-    a.linearSearch(8);
-    cout << "---Target is duplicated---" << endl;
-    a.linearSearch(9);
-    cout << "---Target is not in the array---" << endl;
-    a.linearSearch(1050);
-
+       cout << " -----------Enter -999 to stop search to targets---------- "<<endl;
+        cout << " Enter the Target Number: ";
+        cin >> t;
+        while (t != -999) {
+            a.linearSearch(t);
+            cout << "-----------Enter -999 to stop search to targets---------- "<<endl;
+            cout << " Enter the Target Number: ";
+            cin >> t;
+        }
+        if (t == -999) {
+            cout << "         ---Thanks for using the app---      ";
+        }
+        delete[] arr;
+    
 }
