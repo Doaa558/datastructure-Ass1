@@ -1,6 +1,13 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+// Best Case
+// The target is found at the middle element on the first check
+// Time Complexity: O(1)
+
+// Worst Case
+// The array contains many duplicate elements so cannot determine which half is sorted like this [ 2,2,2,2,2 ]
+// Time Complexity: O(n)
 
 int searchRotated(vector<int>& v, int n, int target, int& comparisons) {
     int left = 0;
