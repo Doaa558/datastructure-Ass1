@@ -7,13 +7,9 @@ int searchRotated(vector<int>& v, int n, int target, int& comparisons) {
     int right = n - 1;
 
     while (left <= right) {
-        int mid = (left + right) / 2;
         comparisons++; 
-        if (v[left] == target) return left;
-        else if (v[right] == target) return right;
-        else if (v[mid] == target) {
-            return mid;
-        }
+        int mid = (left + right) / 2;
+        if (v[mid] == target) return mid;
 
 
         // duplicates
@@ -24,7 +20,7 @@ int searchRotated(vector<int>& v, int n, int target, int& comparisons) {
         // Left sorted
         else if (v[left] <= v[mid]) {
             comparisons++;
-            if (target > v[left] && target < v[mid]) {
+            if (target >= v[left] && target < v[mid]) {
                 right = mid - 1;
             }
             else {
@@ -34,7 +30,7 @@ int searchRotated(vector<int>& v, int n, int target, int& comparisons) {
         // Right sorted
         else {
             comparisons++;
-            if (target > v[mid] && target < v[right]) {
+            if (target > v[mid] && target <= v[right]) {
                 left = mid + 1;
             }
             else {
