@@ -1,5 +1,6 @@
 #include <iostream>
 #include <queue>
+#include <iomanip>
 using namespace  std;
 
 struct stProcess
@@ -11,107 +12,143 @@ struct stProcess
 	int CompletionTime; // time when process is fulfilled, when remaining time = 0
 	int TurnaroundTime; // time after all processes are fulfilled
 	int WaitingTime; //completion - burst
+    bool InQueue; //flag
+    bool IsCompleted; //flag
 };
 
-stProcess ReadInfoProcess()
-{
-	stProcess Process;
-	cout << "Please enter the arrival time: ";
-	cin >> Process.ArrivalTime;
-	cout << "Please enter the Burst time: ";
-	cin >> Process.BurstTime;
-	Process.RemainingTime = Process.BurstTime;
-	return Process;
-	
+void PrintQueueUpdates(queue<int> Queue) {
+    if (Queue.empty()) {
+        cout << "[Empty]\n";
+        return;
+    }
+    cout << "[";
+    while (!Queue.empty()) {
+        cout << "P" << Queue.front();
+        Queue.pop();
+        if (!Queue.empty()) cout << ", ";
+    }
+    cout << "]\n";
 }
 
-void PrintInfoQueue(queue <stProcess> FulfilledQueue)
+int main() 
 {
-	cout << "\n=====================================================================\n";
-	cout << "Process\t Completion time\t Turnaround time\t Waiting time\n";
-	while (!FulfilledQueue.empty())
-	{
-		cout << "p" << FulfilledQueue.front().ID << "\t\t" << FulfilledQueue.front().CompletionTime <<
-			"\t\t\t" << FulfilledQueue.front().TurnaroundTime << "\t\t\t" << 
-			FulfilledQueue.front().WaitingTime << endl;
-		FulfilledQueue.pop();
-	}
-}
+    int TimeQuantum = 0, NumOfProcesses = 0, CurrentTime = 0;
+    int CompletedCount = 0;
 
-int main()
-{
-	int CurrentTime = 0, NumOfProcesses = 0, TimeQuantum = 0, WaitingTime = 0;
-	queue <stProcess> AllProcessesQueue, ReadyQueue, FulfilledQueue;
-	stProcess Process;
+    cout << "Please enter the time quantum: ";
+    cin >> TimeQuantum;
+    cout << "How many Processes? ";
+    cin >> NumOfProcesses;
 
-	cout << "Please enter the time quantum: ";
-	cin >> TimeQuantum;
-	cout << "How many Processes? ";
-	cin >> NumOfProcesses;
-	
-	// manage ids
-	queue <int> IDs;
-	for (int i = 1; i <= NumOfProcesses; i++)
-	{
-		IDs.push(i);
-	}
+    stProcess* AllProcesses = new stProcess[NumOfProcesses];
 
-	cout << "===================================\n";
-	// store processes info in queue and handle ids
-	for (int i = 1; i <= NumOfProcesses; i++)
-	{
-		cout << "For Process " << i << " " << endl;
-		AllProcessesQueue.push(ReadInfoProcess());
-		AllProcessesQueue.back().ID = IDs.front();
-		IDs.pop();
-		cout << "===================================\n";
-	}
-	//logic of algorithm
-	cout << "Queue updates:\n\n";
-	while (!AllProcessesQueue.empty())
-	{
-		if (AllProcessesQueue.front().ArrivalTime <= CurrentTime)
-		{
-			Process = AllProcessesQueue.front();
-			ReadyQueue.push(Process);
-			cout << "[p" << ReadyQueue.front().ID << "]\n";
-			for (int i = TimeQuantum; i > 0 && ReadyQueue.front().RemainingTime > 0; i--)
-			{
-				CurrentTime++;
-				ReadyQueue.front().RemainingTime--;
+    cout << "===================================\n";
+    for (int i = 0; i < NumOfProcesses; i++) 
+    {
+        AllProcesses[i].ID = i + 1;
+        cout << "Arrival Time, Needed Time P" << AllProcesses[i].ID << ": ";
+        cin >> AllProcesses[i].ArrivalTime >> AllProcesses[i].BurstTime;
+        AllProcesses[i].RemainingTime = AllProcesses[i].BurstTime;
+        AllProcesses[i].InQueue = false;
+        AllProcesses[i].IsCompleted = false;
+    }
+    cout << "===================================\n";
 
-				// for tracing step by step 
-				/*cout << "\nCPU is processing p" << ReadyQueue.front().ID << endl;
-				cout << "remaining time = " << ReadyQueue.front().RemainingTime << endl;
-				cout << "current time = " << CurrentTime << endl;*/
-			}
-			//check if process is fulfilled or not
-			if (ReadyQueue.front().RemainingTime > 0) 
-			{
-				Process = ReadyQueue.front();
-				ReadyQueue.pop(), AllProcessesQueue.pop();
-				ReadyQueue.push(Process), AllProcessesQueue.push(Process);
-			}
-			else
-			{
-				ReadyQueue.front().CompletionTime = CurrentTime;
-				ReadyQueue.front().TurnaroundTime = ReadyQueue.front().CompletionTime - ReadyQueue.front().ArrivalTime;
-				ReadyQueue.front().WaitingTime = ReadyQueue.front().TurnaroundTime - ReadyQueue.front().BurstTime;
-				WaitingTime += ReadyQueue.front().WaitingTime;
-				Process = ReadyQueue.front();
+    cout << "\nQueue updates:\n\n";
 
-				ReadyQueue.pop(), AllProcessesQueue.pop();
-				FulfilledQueue.push(Process);
-			}
-		}
+    queue<int> ReadyQueue;
+    queue<stProcess> FulfilledQueue;
+    stProcess* PreemptedProcess = nullptr;
 
-		else
-		{
-			CurrentTime = AllProcessesQueue.front().ArrivalTime;
-			cout << "[Empty]" << endl;
-		}
-	}
-	cout << "[Empty]" << endl;
-	PrintInfoQueue(FulfilledQueue);
-	cout << "Average waiting time: " << (double)WaitingTime / NumOfProcesses;
+    while (CompletedCount < NumOfProcesses)
+    {
+        for (int i = 0; i < NumOfProcesses; i++) 
+        {
+            if (AllProcesses[i].ArrivalTime <= CurrentTime && !AllProcesses[i].InQueue &&
+                !AllProcesses[i].IsCompleted && &AllProcesses[i] != PreemptedProcess)
+            {
+
+                ReadyQueue.push(AllProcesses[i].ID);
+                AllProcesses[i].InQueue = true;
+            }
+        }
+
+        if (PreemptedProcess != nullptr)
+        {
+            ReadyQueue.push(PreemptedProcess->ID);
+            PreemptedProcess->InQueue = true;
+            PreemptedProcess = nullptr;
+        }
+
+        PrintQueueUpdates(ReadyQueue);
+
+        if (ReadyQueue.empty()) 
+        {
+            int NextArrival = -1;
+            for (int i = 0; i < NumOfProcesses; i++) 
+            {
+                if (!AllProcesses[i].IsCompleted) 
+                {
+                    if (NextArrival == -1 || AllProcesses[i].ArrivalTime < NextArrival) 
+                    {
+                        NextArrival = AllProcesses[i].ArrivalTime;
+                    }
+                }
+            }
+            if (NextArrival != -1) 
+            {
+                CurrentTime = NextArrival;
+                continue;
+            }
+        }
+        int CurrentProcessID = ReadyQueue.front();
+        ReadyQueue.pop();
+
+        stProcess& CurrentProcess = AllProcesses[CurrentProcessID - 1];
+        CurrentProcess.InQueue = false;
+
+        int ExecuteTime = min(TimeQuantum, CurrentProcess.RemainingTime);
+        CurrentTime += ExecuteTime;
+        CurrentProcess.RemainingTime -= ExecuteTime;
+
+        //check if process is fullfilled or not
+        if (CurrentProcess.RemainingTime == 0) 
+        {
+            CurrentProcess.IsCompleted = true;
+            CurrentProcess.CompletionTime = CurrentTime;
+            CurrentProcess.TurnaroundTime = CurrentProcess.CompletionTime - CurrentProcess.ArrivalTime;
+            CurrentProcess.WaitingTime = CurrentProcess.TurnaroundTime - CurrentProcess.BurstTime;
+
+            FulfilledQueue.push(CurrentProcess);
+            CompletedCount++;
+        }
+        else
+        {
+            PreemptedProcess = &CurrentProcess;
+        }
+    }
+
+    PrintQueueUpdates(ReadyQueue);
+    int TotalWaitingTime = 0;
+    cout << "\n=====================================================================\n";
+    cout << "Process\t Completion time\t Turnaround time\t Waiting time\n";
+
+    while (!FulfilledQueue.empty()) 
+    {
+        stProcess p = FulfilledQueue.front();
+        cout << "p" << p.ID << "\t\t"
+            << p.CompletionTime << "\t\t\t"
+            << p.TurnaroundTime << "\t\t\t"
+            << p.WaitingTime << "\n";
+
+        TotalWaitingTime += p.WaitingTime;
+        FulfilledQueue.pop();  
+    }
+    cout << "=====================================================================\n";
+
+    cout << "\nAverage waiting time: " << fixed << setprecision(1) << (double)TotalWaitingTime / NumOfProcesses;
+
+    delete[] AllProcesses;
+
+    return 0;
 }
